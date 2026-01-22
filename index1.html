@@ -13,6 +13,18 @@ h1 {
   text-align: center;
 }
 
+
+<input
+  id="aiTopic"
+  placeholder="Type any topic (e.g. Ohm's Law)"
+  style="display:block; margin:20px auto; padding:10px; width:300px;"
+>
+
+<button onclick="generateFromAI()" style="display:block; margin:auto;">
+  Generate Questions (AI)
+</button>
+
+     
 #quizBox {
   background: white;
   padding: 20px;
@@ -138,6 +150,53 @@ function finishTest() {
   document.querySelector("button").disabled = true;
 
 }
+
+<script>
+async function generateFromAI() {
+  const topic = document.getElementById("aiTopic").value.trim();
+
+  if (!topic) {
+    alert("Please type a topic");
+    return;
+  }
+
+  alert("Generating questions... First time may take ~30 seconds.");
+
+  try {
+    const res = await fetch(
+      "https://gemini-backend-heft.onrender.com/generate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic })
+      }
+    );
+
+    if (!res.ok) {
+      alert("AI limit reached or backend error");
+      return;
+    }
+
+    const data = await res.json();
+
+    // 🔥 Inject AI questions into your existing system
+    questionBank["AI"] = data.questions;
+
+    // Add option dynamically
+    const select = document.getElementById("topicSelect");
+    if (![...select.options].some(o => o.value === "AI")) {
+      select.innerHTML += `<option value="AI">AI Generated</option>`;
+    }
+
+    alert("Questions ready! Select 'AI Generated'");
+
+  } catch (e) {
+    alert("Backend is sleeping. Try again in 30 seconds.");
+  }
+}
+</script>
+
+
 </script>
 
 </body>
